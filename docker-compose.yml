@@ -1,0 +1,11 @@
+version: "3.5"
+services:
+  postgres:
+    image: postgres:latest
+    hostname: db
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=api
+      - POSTGRES_DB=database
+    ports:
+      - "5432:5432"
