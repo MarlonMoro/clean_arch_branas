@@ -71,9 +71,15 @@ app.get("/account/:id", async function (req, res) {
 	console.log(req.params)
 	const connection = pgp()("postgres://api:password@localhost:5432/database");
 	const { id } = req.params
-	const [acc] = await connection.query("select * from cccat16.account where email = $1", id);
-	res.json(acc)
-
+	const [acc] = await connection.query("select * from cccat16.account where account_id = $1", id);
+	if(!acc) {
+		console.log("conta nao encontrada")
+		res.sendStatus(422)
+	} else {
+		const { account_id: accountId, is_passenger: isPassenger, is_driver: isDriver, car_plate: carPlate, ...otherProperties} = acc
+		res.json({ accountId, isPassenger, isDriver, ...otherProperties })
+	}
+	await connection.$pool.end();
 });
 
 app.listen(3000);
