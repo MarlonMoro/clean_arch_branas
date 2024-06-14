@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "build" : "tsc",
-    "start": "node dist/api.js",
+    "start": "nodemon dist/api.js",
     "dev": "ts-node src/api.ts",
     "test": "jest"
   },
