@@ -65,3 +65,17 @@ test("Nao deve criar uma conta para o passageiro se o nome for invalido", async 
 	expect(createdAccountId).toBe(-3);
 
 });
+
+test.only("Nao deve criar uma conta para o passageiro se o email for invalido", async function () {
+	const input = {
+		name: "John valid",
+		email: `john.doe${Math.random()}gmail.com`,
+		cpf: "87748248800",
+		isPassenger: true
+	};
+	const createAccountResponse = await axios.post("http://localhost:3000/signup", input);
+	const createdAccountId = createAccountResponse.data;
+	expect(createAccountResponse.status).toBe(422);
+	expect(createdAccountId).toBe(-2);
+
+});
