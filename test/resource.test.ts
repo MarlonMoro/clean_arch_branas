@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { saveAccount, getAccountById, getAccountByEmail } from "../src/resource";
+import { AccountDAODatabase } from "../src/resource/AccountDAO";
 
 test("Deve salvar um registro na tabela account e consultar por id", async function() {
     const account = {
@@ -9,8 +9,9 @@ test("Deve salvar um registro na tabela account e consultar por id", async funct
 		cpf: "87748248800",
 		isPassenger: true
 	};
-    await saveAccount(account);
-    const savedAccount = await getAccountById(account.id)
+	const accountDAO = new AccountDAODatabase();
+    await accountDAO.saveAccount(account);
+    const savedAccount = await accountDAO.getAccountById(account.id)
     expect(savedAccount.account_id).toBe(account.id);
 	expect(savedAccount.name).toBe(account.name);
 	expect(savedAccount.is_passenger).toBeTruthy();
@@ -28,8 +29,9 @@ test("Deve salvar um registro na tabela account e consultar por email", async fu
 		cpf: "87748248800",
 		isPassenger: true
 	};
-    await saveAccount(account);
-    const savedAccount = await getAccountByEmail(account.email)
+	const accountDAO = new AccountDAODatabase();
+    await accountDAO.saveAccount(account);
+    const savedAccount = await accountDAO.getAccountByEmail(account.email)
     expect(savedAccount.account_id).toBe(account.id);
 	expect(savedAccount.name).toBe(account.name);
 	expect(savedAccount.is_passenger).toBeTruthy();

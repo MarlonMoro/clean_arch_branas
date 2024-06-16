@@ -42,4 +42,26 @@ export class AccountDAODatabase implements AccountDAO {
 
 }
 
+export class AccountDAOMemory implements AccountDAO {
+  
+  accounts: any[];
+
+  constructor(){
+    this.accounts = [];
+  }
+  
+  async getAccountByEmail(email: string): Promise<any> {
+    const account = this.accounts.find((account: any) => account.email === email);
+    return account;
+  }
+  async getAccountById(accountIdentifier: string): Promise<any> {
+    const account = this.accounts.find((account: any) => account.id === accountIdentifier);
+    return account;
+  }
+  async saveAccount(account: any): Promise<void> {
+    account.accountId = account.id
+    this.accounts.push(account);
+  }
+  
+}
 

@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import { validate } from "./validateCpf";
-import { AccountDAO } from "./resource";
+import { AccountDAO } from "../resource/AccountDAO";
 
 export class Signup {
   constructor(readonly accountDAO: AccountDAO) {}
@@ -24,24 +24,5 @@ export class Signup {
     return {
       accountId: account.id,
     };
-  }
-}
-
-export class GetAccount {
-  constructor(readonly accountDAO: AccountDAO) {}
-
-  async execute(accountIdentifier: string) {
-    const acc = await this.accountDAO.getAccountById(accountIdentifier);
-  if (!acc) {
-    return;
-  }
-  const {
-    account_id: accountId,
-    is_passenger: isPassenger,
-    is_driver: isDriver,
-    car_plate: carPlate,
-    ...otherProperties
-  } = acc;
-  return { accountId, isPassenger, isDriver, carPlate, ...otherProperties };
   }
 }
