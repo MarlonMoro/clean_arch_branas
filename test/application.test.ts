@@ -51,8 +51,7 @@ test("Nao deve criar uma conta para o passageiro se o nome for invalido", async 
 		cpf: "87748248800",
 		isPassenger: true
 	};
-	const account = await signup(input);
-	expect(account).toBe(-3);
+	await expect(() => signup(input)).rejects.toThrow(new Error("Invalid Name"));
 
 });
 
@@ -63,8 +62,7 @@ test("Nao deve criar uma conta para o passageiro se o email for invalido", async
 		cpf: "87748248800",
 		isPassenger: true
 	};
-	const account = await signup(input);
-	expect(account).toBe(-2);
+	await expect(() => signup(input)).rejects.toThrow(new Error("Invalid email"));
 
 });
 
@@ -75,7 +73,6 @@ test("Nao deve criar uma conta se o cpf for invalido", async function () {
 		cpf: "01020304567",
 		isPassenger: true
 	};
-	const account = await signup(input);
-	expect(account).toBe(-1);
+	await expect(() => signup(input)).rejects.toThrow(new Error("Invalid cpf"));
 
 });
