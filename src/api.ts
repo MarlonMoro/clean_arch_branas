@@ -1,11 +1,14 @@
 import express from "express";
-import { getAccount, signup } from "./application";
+import { AccountDAODatabase } from "./resource";
+import { GetAccount, Signup } from "./application";
 const app = express();
 app.use(express.json());
 
 app.post("/signup", async function (req, res) {
 try {
-  const output = await signup(req.body);
+  const accountDAO = new AccountDAODatabase();
+  const signup = new Signup(accountDAO);
+  const output = await signup.execute(req.body);
   res.json(output);
 } catch (error: any) {
   res.status(422).json({
@@ -15,7 +18,9 @@ try {
 });
 
 app.get("/accounts/:id", async function (req, res) {
-  const account = await getAccount(req.params.id);
+  const accountDAO = new AccountDAODatabase();
+  const getAccount = new GetAccount(accountDAO);
+  const account = await getAccount.execute(req.params.id);
   if(!account) {
     res.sendStatus(404)
   } else {
