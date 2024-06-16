@@ -5,8 +5,8 @@
   "license": "MIT",
   "scripts": {
     "build" : "tsc",
-    "start": "nodemon dist/api.js",
-    "dev": "ts-node src/api.ts",
+    "start": "node dist/api.js",
+    "dev": "nodemon --watch 'src/' --exec 'ts-node src/api.ts' -e ts",
     "test": "jest"
   },
   "dependencies": {

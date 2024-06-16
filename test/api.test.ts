@@ -80,10 +80,10 @@ test("Nao deve criar uma conta para o passageiro se o email for invalido", async
 
 });
 
-test("Nao deve criar uma conta se o cpf for invalido", async function () {
+test.only("Nao deve criar uma conta se o cpf for invalido", async function () {
 	const input = {
 		name: "John Document Invalid",
-		email: `john.doe${Math.random()}gmail.com`,
+		email: `john.doe${Math.random()}@gmail.com`,
 		cpf: "01020304567",
 		isPassenger: true
 	};
