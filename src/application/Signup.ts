@@ -1,9 +1,10 @@
 import crypto from "crypto";
 import { validate } from "./validateCpf";
 import { AccountDAO } from "../resource/AccountDAO";
+import { MailerGateway } from "../resource/MailerGateway";
 
 export class Signup {
-  constructor(readonly accountDAO: AccountDAO) {}
+  constructor(readonly accountDAO: AccountDAO, readonly mailerGarteway: MailerGateway) {}
 
   async execute(input: any): Promise<any> {
     const account = input;
@@ -21,6 +22,7 @@ export class Signup {
     )
       throw new Error("Invalid carPlate");
     await this.accountDAO.saveAccount(account);
+    await this.mailerGarteway.send(account.email, "Welcome!", "")
     return {
       accountId: account.id,
     };

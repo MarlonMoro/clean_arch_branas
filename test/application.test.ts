@@ -1,13 +1,15 @@
 import { GetAccount } from "../src/application/GetAccount"
 import { Signup } from "../src/application/Signup"
 import { AccountDAODatabase, AccountDAOMemory } from "../src/resource/AccountDAO";
+import { MailerGatewayMemory } from "../src/resource/MailerGateway";
 
 let signup: Signup;
 let getAccount: GetAccount;
 
 beforeEach(async () => {
 	const accountDAO = new AccountDAOMemory();
-	signup = new Signup(accountDAO);
+	const mailerGateway = new MailerGatewayMemory();
+	signup = new Signup(accountDAO, mailerGateway);
 	getAccount = new GetAccount(accountDAO);
 })
 

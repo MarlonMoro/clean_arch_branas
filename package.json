@@ -6,7 +6,7 @@
   "scripts": {
     "build" : "tsc",
     "start": "node dist/api.js",
-    "dev": "nodemon --watch 'src/' --exec 'ts-node src/api.ts' -e ts",
+    "dev": "nodemon --watch 'src/' --exec 'ts-node src/driver/api.ts' -e ts",
     "test": "jest"
   },
   "dependencies": {
