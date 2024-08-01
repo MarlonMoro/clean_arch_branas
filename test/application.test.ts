@@ -2,6 +2,7 @@ import { GetAccount } from "../src/application/GetAccount"
 import { Signup } from "../src/application/Signup"
 import { AccountDAODatabase, AccountDAOMemory } from "../src/resource/AccountDAO";
 import { MailerGatewayMemory } from "../src/resource/MailerGateway";
+import sinon from "sinon"
 
 let signup: Signup;
 let getAccount: GetAccount;
@@ -88,4 +89,48 @@ test("Nao deve criar uma conta se o cpf for invalido", async function () {
 	};
 	await expect(() => signup.execute(input)).rejects.toThrow(new Error("Invalid cpf"));
 
+});
+
+
+test("Deve criar uma conta para o passageiro com stub", async function () {
+	const input = {
+		name: "John Doe",
+		email: `john.doe${Math.random()}@gmail.com`,
+		cpf: "87748248800",
+		isPassenger: true
+	};
+
+	const expectedAccount = {
+		account_id: null,
+		is_passenger: input.isPassenger,
+		is_driver: null,
+		car_plate: null,
+		...input
+	}
+
+	const getAccounByEmailStub = sinon.stub(AccountDAODatabase.prototype, "getAccountByEmail").resolves(null);
+	const saveAccountStub = sinon.stub(AccountDAODatabase.prototype, "saveAccount").resolves();
+	const getAccountByIdStub = sinon.stub(AccountDAODatabase.prototype, "getAccountById").resolves(expectedAccount);
+
+	const accountDAO = new AccountDAODatabase();
+	const mailerGateway = new MailerGatewayMemory();
+	const signup = new Signup(accountDAO, mailerGateway);
+	const getAccount = new GetAccount(accountDAO);
+	
+	const signupOutput = await signup.execute(input);
+	const createdAccountId = signupOutput.accountId;
+	expectedAccount.account_id = createdAccountId;
+
+	expect(createdAccountId).toBeDefined();
+	const account = await getAccount.execute(createdAccountId);
+	expect(account.accountId).toBe(createdAccountId);
+	expect(account.name).toBe(input.name);
+	expect(account.isPassenger).toBeTruthy();
+	expect(account.email).toBe(input.email);
+	expect(account.cpf).toBe(input.cpf);
+	expect(account.isDriver).toBeFalsy();
+
+	getAccounByEmailStub.restore();
+	saveAccountStub.restore();
+	getAccountByIdStub.restore();
 });
