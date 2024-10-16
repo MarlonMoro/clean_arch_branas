@@ -1,3 +1,5 @@
+// framework and driver, interface adapter
+
 import pgp from "pg-promise";
 
 

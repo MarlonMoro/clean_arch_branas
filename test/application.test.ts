@@ -164,6 +164,8 @@ test("Deve criar uma conta para o passageiro com spy", async function () {
 	expect(account.isDriver).toBeFalsy();
 	expect(sendSpy.calledOnce).toBe(true);
 	expect(sendSpy.calledWith(input.email, "Welcome!", "")).toBe(true);
+
+	sendSpy.restore();
 });
 
 //Mock é uma mistura do spy com o stub. Criando as "expectativas" no próprio objeto mockado

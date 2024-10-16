@@ -1,3 +1,5 @@
+// use case, entity
+
 import crypto from "crypto";
 import { validate } from "./validateCpf";
 import { AccountDAO } from "../resource/AccountDAO";

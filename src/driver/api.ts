@@ -1,8 +1,11 @@
+// framework and driver, interface adapter
 import express from "express";
 import { AccountDAODatabase } from "../resource/AccountDAO";
 import { GetAccount } from "../application/GetAccount";
 import { Signup } from "../application/Signup";
 import { MailerGatewayMemory } from "../resource/MailerGateway";
+import { GetRide } from "../application/GetRide";
+import { RideDAODatabase } from "../resource/RideDAO";
 const app = express();
 app.use(express.json());
 
@@ -29,6 +32,23 @@ app.get("/accounts/:id", async function (req, res) {
   } else {
     const { accountId, isPassenger, isDriver, carPlate, ...otherProperties } = account;
     res.json({ accountId, isPassenger, isDriver, carPlate, ...otherProperties });
+  }
+});
+
+app.get("/rides/:id", async (req, res) => {
+  const accountDAO = new AccountDAODatabase();
+  const rideDAO = new RideDAODatabase();
+  const getRide = new GetRide(accountDAO, rideDAO);
+  try {
+    const ride = await getRide.execute({ rideId: req.params.id });
+    res.json(ride);
+  } catch (error: any) {
+    if(error.message == 'Ride not found') {
+      return res.sendStatus(404);
+    } 
+    res.status(500).json({
+      message: error.message
+    });
   }
 });
 

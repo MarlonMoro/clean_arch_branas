@@ -3,30 +3,19 @@ import { AccountDAOMemory } from "../resource/AccountDAO";
 import { MailerGatewayMemory } from "../resource/MailerGateway";
 
 let input: any = {}
-let step = ""
 
 process.stdin.on("data", async function(chunk) {
     const command = chunk.toString().replace(/\n/g,"");
-    if(command.startsWith("signup-passenger")) {
-        process.stdout.write("passenger-name: ");
-        step = "name";
-        return;
+    if(command.startsWith("name")) {
+        input.name = command.replace("name ", "");
     }
-    if(step === "name") {
-        input[step] = command;
-        process.stdout.write("passenger-email: ");
-        step = "email";
-        return;
+    if(command.startsWith("email")){
+        input.email = command.replace("email ", "");
     }
-    if(step === "email") {
-        input[step] = command;
-        process.stdout.write("passenger-cpf: ");
-        step = "cpf";
-        return; 
+    if(command.startsWith("cpf")) {
+      input.cpf = command.replace("cpf ", "")  
     }
-    if(step === "cpf") {
-        input[step] = command;
-        console.log(input)
+    if(command.startsWith("signup")) {
         const accountDAO = new AccountDAOMemory();
         const mailerGateway = new MailerGatewayMemory();
         const signup = new Signup(accountDAO, mailerGateway);
