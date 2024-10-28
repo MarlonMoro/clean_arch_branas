@@ -5,8 +5,8 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/driver/api.js",
-    "dev": "nodemon --watch 'src/' --exec 'ts-node src/driver/api.ts' -e ts",
+    "start": "node dist/main_api.js",
+    "dev": "nodemon --watch 'src/' --exec 'ts-node src/main_api.ts' -e ts",
     "test": "jest"
   },
   "dependencies": {

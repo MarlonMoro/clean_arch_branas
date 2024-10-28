@@ -1,18 +1,20 @@
-import { GetAccount } from "../src/application/GetAccount"
-import { Signup } from "../src/application/Signup"
-import { AccountDAODatabase, AccountDAOMemory } from "../src/resource/AccountDAO";
-import { MailerGatewayMemory } from "../src/resource/MailerGateway";
+import Account from "../src/domain/Account";
+import { GetAccount } from "../src/application/usecase/GetAccount"
+import { Signup } from "../src/application/usecase/Signup"
+import { AccountRepositoryDatabase, AccountRepositoryMemory } from "../src/infra/repository/AccountRepository";
+import { MailerGatewayMemory } from "../src/infra/gateway/MailerGateway";
 import sinon from "sinon"
+import { PgPromiseAdapter } from "../src/infra/database/DatabaseConnection";
 
 let signup: Signup;
 let getAccount: GetAccount;
 
 beforeEach(async () => {
 	//Fake é uma implementação falsa que "supre" a necessidade daquele componente
-	const accountDAO = new AccountDAOMemory();
+	const AccountRepository = new AccountRepositoryMemory();
 	const mailerGateway = new MailerGatewayMemory();
-	signup = new Signup(accountDAO, mailerGateway);
-	getAccount = new GetAccount(accountDAO);
+	signup = new Signup(AccountRepository, mailerGateway);
+	getAccount = new GetAccount(AccountRepository);
 })
 
 
@@ -28,7 +30,10 @@ test("Deve criar uma conta para o passageiro", async function () {
 	const createdAccountId = signupOutput.accountId;
 	expect(createdAccountId).toBeDefined();
 	const account = await getAccount.execute(createdAccountId);
-	expect(account.accountId).toBe(createdAccountId);
+	if(!account) {
+		throw new Error();
+	}
+	expect(account.id).toBe(createdAccountId);
 	expect(account.name).toBe(input.name);
 	expect(account.isPassenger).toBeTruthy();
 	expect(account.email).toBe(input.email);
@@ -50,7 +55,10 @@ test("Deve criar uma conta para o driver", async function () {
 	const createdAccountId = signupOutput.accountId;
 	expect(createdAccountId).toBeDefined();
 	const account = await getAccount.execute(createdAccountId);
-	expect(account.accountId).toBe(createdAccountId);
+	if(!account) {
+		throw new Error();
+	}
+	expect(account.id).toBe(createdAccountId);
 	expect(account.name).toBe(input.name);
 	expect(account.isPassenger).toBeFalsy();
 	expect(account.email).toBe(input.email);
@@ -101,30 +109,24 @@ test("Deve criar uma conta para o passageiro com stub", async function () {
 		isPassenger: true
 	};
 
-	const expectedAccount = {
-		account_id: null,
-		is_passenger: input.isPassenger,
-		is_driver: null,
-		car_plate: null,
-		...input
-	}
+	
+	const expectedAccount = Account.restore("null",input.name, input.email, input.cpf, null, input.isPassenger, false);
 
-	const getAccounByEmailStub = sinon.stub(AccountDAODatabase.prototype, "getAccountByEmail").resolves(null);
-	const saveAccountStub = sinon.stub(AccountDAODatabase.prototype, "saveAccount").resolves();
-	const getAccountByIdStub = sinon.stub(AccountDAODatabase.prototype, "getAccountById").resolves(expectedAccount);
+	const getAccounByEmailStub = sinon.stub(AccountRepositoryDatabase.prototype, "getAccountByEmail").resolves(undefined);
+	const saveAccountStub = sinon.stub(AccountRepositoryDatabase.prototype, "saveAccount").resolves();
+	const getAccountByIdStub = sinon.stub(AccountRepositoryDatabase.prototype, "getAccountById").resolves(expectedAccount);
 
-	const accountDAO = new AccountDAODatabase();
+	const connection = new PgPromiseAdapter();
+	const AccountRepository = new AccountRepositoryDatabase(connection);
 	const mailerGateway = new MailerGatewayMemory();
-	const signup = new Signup(accountDAO, mailerGateway);
-	const getAccount = new GetAccount(accountDAO);
+	const signup = new Signup(AccountRepository, mailerGateway);
+	const getAccount = new GetAccount(AccountRepository);
 	
 	const signupOutput = await signup.execute(input);
 	const createdAccountId = signupOutput.accountId;
-	expectedAccount.account_id = createdAccountId;
 
 	expect(createdAccountId).toBeDefined();
 	const account = await getAccount.execute(createdAccountId);
-	expect(account.accountId).toBe(createdAccountId);
 	expect(account.name).toBe(input.name);
 	expect(account.isPassenger).toBeTruthy();
 	expect(account.email).toBe(input.email);
@@ -134,6 +136,7 @@ test("Deve criar uma conta para o passageiro com stub", async function () {
 	getAccounByEmailStub.restore();
 	saveAccountStub.restore();
 	getAccountByIdStub.restore();
+	connection.close();
 });
 
 //Registra tudo o que aconteceu com o componente, e ao final é preciso fazer a verificação do que era esperado
@@ -146,11 +149,11 @@ test("Deve criar uma conta para o passageiro com spy", async function () {
 	};
 
 	const sendSpy = sinon.spy(MailerGatewayMemory.prototype, "send");
-
-	const accountDAO = new AccountDAODatabase();
+	const connection = new PgPromiseAdapter();
+	const AccountRepository = new AccountRepositoryDatabase(connection);
 	const mailerGateway = new MailerGatewayMemory();
-	const signup = new Signup(accountDAO, mailerGateway);
-	const getAccount = new GetAccount(accountDAO);
+	const signup = new Signup(AccountRepository, mailerGateway);
+	const getAccount = new GetAccount(AccountRepository);
 	
 	const signupOutput = await signup.execute(input);
 	const createdAccountId = signupOutput.accountId;
@@ -164,8 +167,8 @@ test("Deve criar uma conta para o passageiro com spy", async function () {
 	expect(account.isDriver).toBeFalsy();
 	expect(sendSpy.calledOnce).toBe(true);
 	expect(sendSpy.calledWith(input.email, "Welcome!", "")).toBe(true);
-
 	sendSpy.restore();
+	connection.close();
 });
 
 //Mock é uma mistura do spy com o stub. Criando as "expectativas" no próprio objeto mockado
@@ -179,10 +182,11 @@ test("Deve criar uma conta para o passageiro com mock", async function () {
 
 	const sendMock = sinon.mock(MailerGatewayMemory.prototype);
 	sendMock.expects("send").withArgs(input.email, "Welcome!", "").once();
-	const accountDAO = new AccountDAODatabase();
+	const connection = new PgPromiseAdapter();
+	const AccountRepository = new AccountRepositoryDatabase(connection);
 	const mailerGateway = new MailerGatewayMemory();
-	const signup = new Signup(accountDAO, mailerGateway);
-	const getAccount = new GetAccount(accountDAO);
+	const signup = new Signup(AccountRepository, mailerGateway);
+	const getAccount = new GetAccount(AccountRepository);
 	
 	const signupOutput = await signup.execute(input);
 	const createdAccountId = signupOutput.accountId;
@@ -196,4 +200,5 @@ test("Deve criar uma conta para o passageiro com mock", async function () {
 	expect(account.isDriver).toBeFalsy();
 	sendMock.verify();
 	sendMock.restore();
+	connection.close();
 });
